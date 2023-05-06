@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Image Search</title>
+  <style>
+    table {
+      margin: 0 auto;
+    }
+  </style>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+
+    $(document).ready(function () {
+      //displayallImage 
+      function displayImages(images) {
+        const $imageTable = $('#imageTable');
+        images.forEach((image) => {
+          const $img = $('<img>').attr('src', image.webformatURL);
+          const $tr = $('<tr>').append($('<td>').append($img));
+          $imageTable.append($tr);
+        });
+      }
+
+      function fetchAllImages() {
+        let API_URL = 'http://localhost:4200/api/';
+        $.get(API_URL, function (data) {
+          let images = data.data;
+
+          displayImages(images);
+        })
+          .catch(error => {
+            console.error(error);
+          });
+      }
+
+      window.onload = fetchAllImages;
+      //searchImage 
+      $('#searchForm').submit(function (event) {
+        event.preventDefault();
+        var query = $('#query').val();
+        let apiUrl = 'http://localhost:4200/api/images?q=' + query;
+        $.get(apiUrl, function (data) {
+          let images = data;
+          let imageTable = $('#imageTable');
+          imageTable.empty();
+          $.each(images, function (index, image) {
+            let img = $('<img>').attr('src', decodeURIComponent(image.webformatURL)).attr('alt', image.tags);
+            img.on('error', function () {
+              console.error('Error loading image:', image.webformatURL);
+            });
+            let tr = $('<tr>').append($('<td>').append(img));
+            imageTable.append(tr);
+          });
+        }).fail(function () {
+          alert('Failed to fetch images');
+        });
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <form id="searchForm">
+    <input type="text" id="query" placeholder="Search...">
+    <button type="submit">Search</button>
+  </form>
+  <h1>All Pixabay Images</h1>
+
+  <table id="imageTable">
+
+  </table>
+</body>
+
+</html>
